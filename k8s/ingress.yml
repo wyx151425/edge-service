@@ -1,0 +1,24 @@
+# 通过 Ingress 将 Edge Service 暴露到集群之外
+# Ingress 对象的 API 版本
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  # Ingress 的名称
+  name: polar-ingress
+spec:
+  # 配置负责管理该对象的 Ingress 控制器
+  ingressClassName: nginx
+  rules:
+    # HTTP 流量的 Ingress 规则
+    - http:
+        paths:
+          # 所有请求的默认规则
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                # 要将流量转发至该 Service 对象
+                name: edge-service
+                port:
+                  # 要将流量转发至该 Service 的端口
+                  number: 80
