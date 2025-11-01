@@ -32,6 +32,16 @@ spring:
           max-life-time: 60s
       # 默认过滤器的列表
       default-filters:
+        # 以网关过滤器的形式配置请求限流器
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter:
+              # 每秒钟放入桶中的令牌数量
+              replenishRate: 10
+              # 允许暴增到 20 个请求
+              burstCapacity: 20
+              # 每个请求花费多少个令牌
+              requestedTokens: 1
         # 过滤器的名称
         - name: Retry
           args:
@@ -75,6 +85,15 @@ spring:
             - name: CircuitBreaker
               args:
                 name: orderCircuitBreaker
+  redis:
+    # 建立连接的时间限制
+    connect-timeout: 2s
+    # 默认的 Redis 主机名
+    host: localhost
+    # 默认的 Redis 端口
+    port: 6379
+    # 接收到响应的时间限制
+    timeout: 1s
 
 resilience4j:
   circuitbreaker:
