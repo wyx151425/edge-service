@@ -1,0 +1,65 @@
+server:
+  # 服务器接受连接的端口
+  port: 9000
+  netty:
+    # 与服务器建立 TCP 连接的等待时间
+    connection-timeout: 2s
+    # 如果没有数据传输，关闭 TCP 连接前的等待时间
+    idle-timeout: 15s
+  # 启动优雅关机
+  shutdown: graceful
+
+spring:
+  application:
+    name: edge-service
+  lifecycle:
+    # 定义 15 秒的宽限期
+    timeout-per-shutdown-phase: 15s
+  cloud:
+    gateway:
+      # 配置 HTTP 客户端的属性
+      httpclient:
+        # 与下游服务建立连接的时间限制 (毫秒)
+        connect-timeout: 2000
+        # 获取到下游服务响应的时间限制 (持续时长)
+        response-timeout: 5s
+        pool:
+          # 连接池的类型，它的值可以是 elastic、fixed 或 disabled
+          type: elastic
+          # 通信通道在关闭之前的空闲时间
+          max-idle-time: 15s
+          # 通信通道将被关闭的时间
+          max-life-time: 60s
+      # 默认过滤器的列表
+      default-filters:
+        # 过滤器的名称
+        - name: Retry
+          args:
+            # 最多重试 3 次
+            retries: 3
+            # 只对 GET 请求进行重试
+            method: GET
+            # 仅当遇到 5xx 错误时进行重试
+            series: SERVER_ERROR
+            # 仅当抛出指定异常时进行重试
+            exception: java.io.IOException, java.util.concurrent.TimeoutException
+            # 重试的延迟是通过 firstBackoff * (factor^n) 计算得出的
+            backoff:
+              firstBackoff: 50ms
+              maxBackoff: 500ms
+              factor: 2
+              basedOnPreviousValue: false
+      # 路由定义的列表
+      routes:
+        # 路由的 ID
+        - id: catalog-route
+          uri: ${CATALOG_SERVICE_URL:http://localhost:9001}/books
+          predicates:
+            # 断言形式为路径匹配
+            - Path=/books/**
+        - id: order-route
+          # 来自环境变量的 URI，如果不存在，则使用默认值
+          uri: ${ORDER_SERVICE_URL:http://localhost:9002}/orders
+          predicates:
+            - Path=/orders/**
+

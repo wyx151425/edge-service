@@ -1,0 +1,41 @@
+plugins {
+    // 在 Gradle 中提供 Java 支持，搭建编译、构建和测试应用的任务
+    id 'java'
+    // 在 Gradle 中提供 Spring Boot 支持并声明想要使用哪个版本
+    id 'org.springframework.boot' version '2.7.18'
+    // 提供对 Spring 的依赖管理特性
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+// Catalog Service 项目的 group ID
+group = 'com.polarbookshop'
+// 应用的版本，默认为 0.0.1-SNAPSHOT
+version = '0.0.1-SNAPSHOT'
+// 构建项目所使用的 Java 版本
+sourceCompatibility = '17'
+
+// 搜索依赖的制品仓库
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', "2021.0.3")
+    // 定义要使用的 Testcontainers 版本
+    set('testcontainersVersion', "1.17.3")
+}
+
+dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
