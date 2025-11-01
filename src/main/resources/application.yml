@@ -57,9 +57,46 @@ spring:
           predicates:
             # 断言形式为路径匹配
             - Path=/books/**
+          filters:
+            # 过滤器的名称
+            - name: CircuitBreaker
+              args:
+                # 断路器的名称
+                name: catalogCircuitBreaker
+                # 当断路器处于打开状态时，要转发至该 URI
+                fallbackUri: forward:/catalog-fallback
         - id: order-route
           # 来自环境变量的 URI，如果不存在，则使用默认值
           uri: ${ORDER_SERVICE_URL:http://localhost:9002}/orders
           predicates:
             - Path=/orders/**
+          filters:
+            # 该断路器没有配置回退 URI
+            - name: CircuitBreaker
+              args:
+                name: orderCircuitBreaker
 
+resilience4j:
+  circuitbreaker:
+    configs:
+      # 适用于所有断路器的默认配置 bean
+      default:
+        # 当断路器处于关闭状态时，记录调用次数的滑动窗口大小
+        slidingWindowSize: 20
+        # 当断路器处于半开状态时，允许调用的请求数
+        permittedNumberOfCallsInHalfOpenState: 5
+        # 当失败率高于阈值时，断路器会被打开
+        failureRateThreshold: 50
+        # 从打开到半开的等待时间 (毫秒)
+        waitDurationInOpenState: 15000
+  timelimiter:
+    configs:
+      # 适用于所有限时器的默认配置
+      default:
+        # 配置超时 (秒)
+        timeoutDuration: 5s
+
+# 为 Resilience4J 启用调试日志
+logging:
+  level:
+    io.github.resilience4j: DEBUG
