@@ -15,7 +15,28 @@ spring:
   lifecycle:
     # 定义 15 秒的宽限期
     timeout-per-shutdown-phase: 15s
+  config:
+    # 如果配置服务器可用的话，会在这里导入配置数据
+    import: "optional:configserver:"
   cloud:
+    config:
+      # 配置服务器的 URL
+      uri: http://localhost:8888
+      # 等待连接配置服务器的超时时间 (毫秒)
+      request-connect-timeout: 5000
+      # 等待从配置服务器读取配置数据的超时时间 (毫秒)
+      request-read-timeout: 5000
+      # 将连接至配置服务器的失败设置为致命错误，在生产环境中设置为 true
+      fail-fast: true
+      retry:
+        # 最大的尝试次数
+        max-attempts: 6
+        # Backoff 的初始重试间隔 (毫秒)
+        initial-interval: 1000
+        # Backoff 的最大重试间隔 (毫秒)
+        max-interval: 2000
+        # 计算下一次间隔的乘数
+        multiplier: 1.1
     gateway:
       # 配置 HTTP 客户端的属性
       httpclient:
@@ -32,6 +53,8 @@ spring:
           max-life-time: 60s
       # 默认过滤器的列表
       default-filters:
+        # 配置网关以保存会话数据，确保将请求转发至下游之前保存会话数据
+        - SaveSession
         # 以网关过滤器的形式配置请求限流器
         - name: RequestRateLimiter
           args:
@@ -94,6 +117,12 @@ spring:
     port: 6379
     # 接收到响应的时间限制
     timeout: 1s
+  # 配置 Spring Session 以便于在 Redis 中存储数据
+  session:
+    store-type: redis
+    timeout: 10m
+    redis:
+      namespace: polar:edge
 
 resilience4j:
   circuitbreaker:
