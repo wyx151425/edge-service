@@ -123,6 +123,23 @@ spring:
     timeout: 10m
     redis:
       namespace: polar:edge
+  security:
+    oauth2:
+      client:
+        registration:
+          # 在 Spring Security 中识别客户端注册的名称 (叫作 registrationId)。它可以是任意的字符串
+          keycloak:
+            # Keycloak 中所定义的 OAuth2 客户端标识符
+            client-id: edge-service
+            # 客户端用来与 Keycloak 进行认证的共享 Secret
+            client-secret: polar-keycloak-secret
+            # 客户端希望能够访问的 scope 列表。openid scope 会在 OAuth2 之上出发 OIDC 认证
+            scope: openid
+        provider:
+          # 与前面几行中的 “registrationId” 名称相同
+          keycloak:
+            # 为特定 realm 提供所有相关 OAuth2 和 OIDC 端点信息的 Keycloak URL
+            issuer-uri: http://localhost:8080/realms/PolarBookshop
 
 resilience4j:
   circuitbreaker:
