@@ -10,7 +10,7 @@ import java.util.List;
  */
 // 持有用户数据的不可变数据类
 public record User(
-        String usernname,
+        String username,
         String firstName,
         String lastName,
         List<String> roles
