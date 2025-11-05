@@ -85,6 +85,13 @@ spring:
       # 路由定义的列表
       routes:
         # 路由的 ID
+        - id: spa-route
+          # 来自环境变量的 URI 值，如果不存在，则使用特定的默认值
+          uri: ${SPA_URL:http://localhost:9004}
+          # 断言是一个路径的列表，匹配了根端点和 SPA 静态资源
+          predicates:
+            - Path=/,/*.css,/*.js,/favicon.ico
+        # 路由的 ID
         - id: catalog-route
           uri: ${CATALOG_SERVICE_URL:http://localhost:9001}/books
           predicates:
